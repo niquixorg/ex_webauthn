@@ -1,0 +1,79 @@
+name: Build precompiled NIFs
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build_release:
+    name: NIF ${{ matrix.nif }} - ${{ matrix.job.target }}
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        nif: ["2.15", "2.16"]
+        job:
+          # macOS
+          - { target: aarch64-apple-darwin,        os: macos-14 }
+          - { target: x86_64-apple-darwin,         os: macos-13 }
+          # Linux glibc
+          - { target: x86_64-unknown-linux-gnu,    os: ubuntu-22.04 }
+          - { target: aarch64-unknown-linux-gnu,   os: ubuntu-22.04,  use-cross: true }
+          # Linux musl
+          - { target: x86_64-unknown-linux-musl,   os: ubuntu-22.04,  use-cross: true }
+          - { target: aarch64-unknown-linux-musl,  os: ubuntu-22.04,  use-cross: true }
+          # Windows
+          - { target: x86_64-pc-windows-msvc,      os: windows-2022 }
+          - { target: x86_64-pc-windows-gnu,       os: windows-2022 }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the project
+        id: build
+        uses: philss/rustler-precompiled-action@v1.1.4
+        with:
+          project-name: ex_webauthn_native
+          project-dir: native/ex_webauthn_native
+          target: ${{ matrix.job.target }}
+          nif-version: ${{ matrix.nif }}
+          use-cross: ${{ matrix.job.use-cross }}
+          project-version: ${{ github.ref_name }}
+
+      - name: Artifact upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.file-name }}
+          path: ${{ steps.build.outputs.file-path }}
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.file-path }}
+
+  publish:
+    name: Publish to Hex
+    needs: build_release
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.19"
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Generate checksums
+        run: mix rustler_precompiled.download ExWebauthn.Native --all --print
+
+      - name: Publish to Hex
+        run: mix hex.publish --yes
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
