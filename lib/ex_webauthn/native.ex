@@ -14,6 +14,15 @@ defmodule ExWebauthn.Native do
     crate: "ex_webauthn_native",
     base_url: "https://github.com/niquixorg/ex_webauthn/releases/download/v#{version}",
     force_build: System.get_env("EX_WEBAUTHN_BUILD") in ["1", "true"],
+    targets: ~w(
+      aarch64-apple-darwin
+      x86_64-apple-darwin
+      x86_64-unknown-linux-gnu
+      aarch64-unknown-linux-gnu
+      x86_64-unknown-linux-musl
+      aarch64-unknown-linux-musl
+      x86_64-pc-windows-msvc
+    ),
     version: version
 
   @type error_kind ::
