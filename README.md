@@ -5,8 +5,35 @@ Elixir NIF wrapper for [webauthn-rs](https://github.com/kanidm/webauthn-rs) — 
 ## Requirements
 
 - Elixir >= 1.19
-- Rust >= 1.75 (for NIF compilation)
-- OpenSSL dev headers (`libssl-dev` / `openssl-devel`)
+- OTP >= 22
+
+Rust is **not** required for most users — precompiled NIF binaries are provided. If you need to compile from source, you'll need Rust >= 1.75 and OpenSSL dev headers.
+
+## Precompiled platforms
+
+Precompiled binaries are available for the following targets:
+
+| OS | Architecture | Target |
+|---|---|---|
+| macOS | ARM (Apple Silicon) | `aarch64-apple-darwin` |
+| macOS | x86_64 (Intel) | `x86_64-apple-darwin` |
+| Linux | x86_64 (glibc) | `x86_64-unknown-linux-gnu` |
+| Linux | ARM64 (glibc) | `aarch64-unknown-linux-gnu` |
+| Linux | x86_64 (musl) | `x86_64-unknown-linux-musl` |
+| Linux | ARM64 (musl) | `aarch64-unknown-linux-musl` |
+| Windows | x86_64 (MSVC) | `x86_64-pc-windows-msvc` |
+
+Each target is built for NIF versions 2.15, 2.16, and 2.17 (OTP 22+, 24+, 26+).
+
+### Building from source
+
+If your platform isn't listed above, or you want to compile locally:
+
+```bash
+EX_WEBAUTHN_BUILD=true mix compile
+```
+
+This requires Rust >= 1.75 and OpenSSL dev headers (`libssl-dev` on Debian/Ubuntu, `openssl-devel` on Fedora/RHEL).
 
 ## Installation
 
