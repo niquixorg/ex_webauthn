@@ -28,6 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Install Rust target (macOS x86 cross-compile)
         if: matrix.job.target == 'x86_64-apple-darwin'
         run: rustup target add x86_64-apple-darwin
@@ -48,7 +53,7 @@ jobs:
           target: ${{ matrix.job.target }}
           nif-version: ${{ matrix.nif }}
           use-cross: ${{ matrix.job.use-cross }}
-          project-version: ${{ github.ref_name }}
+          project-version: ${{ steps.version.outputs.version }}
           cargo-args: "--package ex_webauthn_native"
         env:
           RUSTFLAGS: ${{ contains(matrix.job.target, 'musl') && '-C target-feature=-crt-static' || '' }}
