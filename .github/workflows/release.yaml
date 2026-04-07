@@ -81,8 +81,15 @@ jobs:
           otp-version: "27"
           elixir-version: "1.19"
 
+      - uses: dtolnay/rust-toolchain@stable
+
       - name: Install dependencies
         run: mix deps.get
+
+      - name: Compile with local build
+        run: mix compile
+        env:
+          EX_WEBAUTHN_BUILD: "true"
 
       - name: Generate checksums
         run: mix rustler_precompiled.download ExWebauthn.Native --all --print
