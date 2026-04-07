@@ -32,9 +32,11 @@ jobs:
         if: matrix.job.target == 'x86_64-apple-darwin'
         run: rustup target add x86_64-apple-darwin
 
-      - name: Install Strawberry Perl (Windows)
+      - name: Setup Perl (Windows)
         if: runner.os == 'Windows'
-        run: choco install strawberryperl -y
+        run: |
+          choco install strawberryperl -y
+          echo "C:\Strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build the project
         id: build
